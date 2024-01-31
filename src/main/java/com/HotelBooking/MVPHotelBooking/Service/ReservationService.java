@@ -29,18 +29,6 @@ public class ReservationService {
         this.reservationRepository = reservationRepository;
         this.hotelRepository = hotelRepository;
     }
-
-    public void bookHotel1(ReservationDTO reservationDTO){
-        ReservationDTO t2 = new ReservationDTO();
-        t2.setDate(reservationDTO.getDate());
-        t2.setBuildingId(reservationDTO.getBuildingId());
-        t2.setUserId("65ba65b4504777e7cf493dde");
-        Thread thread1 = new Thread(() -> this.bookHotel(reservationDTO));
-        Thread thread2 = new Thread(() -> this.bookHotel(t2));
-
-        thread1.start();
-        thread2.start();
-    }
     @Transactional
     public Reservation bookHotel(ReservationDTO reservation){
 
@@ -57,7 +45,7 @@ public class ReservationService {
 
             if(availableRooms >0){
                 //allot a room
-                String roomId = selectFreeRoom(reservation.getBuildingId(),checkinDate);
+                String roomId = selectFreeRoom(hotelDetails.get(),checkinDate);
 
                 //set the reservation details
                 reservationObject.setRoomId(roomId);
@@ -75,10 +63,9 @@ public class ReservationService {
 
     }
 
-    String selectFreeRoom(String buildingId,LocalDate date){
+    String selectFreeRoom(Building hotel,LocalDate date){
 
-        List<Reservation> reservationList = reservationRepository.findAllByDateAndHotel(buildingId,date);
-        Building hotel = hotelRepository.findById(buildingId).get();
+        List<Reservation> reservationList = reservationRepository.findAllByDateAndHotel(hotel.get_id(),date);
         HashMap<String,Integer> roomOccupied= new HashMap<>();
 
         for(Reservation itr : reservationList){
