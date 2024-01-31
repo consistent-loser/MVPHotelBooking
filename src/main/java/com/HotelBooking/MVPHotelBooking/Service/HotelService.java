@@ -2,9 +2,11 @@ package com.HotelBooking.MVPHotelBooking.Service;
 
 import com.HotelBooking.MVPHotelBooking.Entity.Building;
 import com.HotelBooking.MVPHotelBooking.Entity.Room;
+import com.HotelBooking.MVPHotelBooking.Exception.MVPException;
 import com.HotelBooking.MVPHotelBooking.Repository.HotelRepository;
 import com.HotelBooking.MVPHotelBooking.Repository.RoomRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,5 +50,15 @@ public class HotelService {
             hotel.get().setRooms(roomList);
             hotelRepository.save(hotel.get());
         }
+    }
+
+    @Cacheable
+    public Building getHotelById(String id){
+        Building hotel = hotelRepository.findById(id).get();
+
+        if(hotel == null){
+            throw new MVPException("No hotel found");
+        }
+        return hotel;
     }
 }

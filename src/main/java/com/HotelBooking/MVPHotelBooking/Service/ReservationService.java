@@ -8,6 +8,7 @@ import com.HotelBooking.MVPHotelBooking.Exception.MVPException;
 import com.HotelBooking.MVPHotelBooking.Repository.HotelRepository;
 import com.HotelBooking.MVPHotelBooking.Repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +30,17 @@ public class ReservationService {
         this.reservationRepository = reservationRepository;
         this.hotelRepository = hotelRepository;
     }
+
+    @Cacheable
+    public Optional<Building> getHotelById(String id){
+        Building hotel = hotelRepository.findById(id).get();
+
+        if(hotel == null){
+            throw new MVPException("No hotel found");
+        }
+        return Optional.of(hotel);
+    }
+
     @Transactional
     public Reservation bookHotel(ReservationDTO reservation){
 
@@ -38,7 +50,7 @@ public class ReservationService {
         List<Reservation> reservations = reservationRepository.findAllByDateAndHotel(reservation.getBuildingId(),checkinDate);
         Reservation reservationObject = new Reservation();
 //        fetch the hotel details
-        Optional<Building> hotelDetails = hotelRepository.findById(reservation.getBuildingId());
+        Optional<Building> hotelDetails = getHotelById(reservation.getBuildingId());
 
         if(hotelDetails.isPresent() && reservations!=null){
             int availableRooms = hotelDetails.get().getNumberOfRooms() - reservations.size();
